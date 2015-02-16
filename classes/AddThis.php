@@ -330,14 +330,25 @@ class AddThis {
       $configurationOptionsJavascript = 'var addthis_config = ' . drupal_json_encode($configuration) . "\n";
       $configurationOptionsJavascript .= 'var addthis_share = ' . drupal_json_encode($templates);
     }
-    drupal_add_js(
-      $configurationOptionsJavascript,
-      array(
-      'type' => 'inline',
-      'scope' => 'footer',
-      'every_page' => TRUE,
-    )
-    );
+
+    // Ensure the JS is only inserted once.
+    static $loaded = array();
+    if (is_array($configurationOptionsJavascript)) {
+      $configurationOptionsJavascript = implode('', $configurationOptionsJavascript);
+    }
+    $md5 = md5($configurationOptionsJavascript);
+    if (!in_array($md5, $loaded)) {
+      $loaded[] = $md5;
+      drupal_add_js(
+        $configurationOptionsJavascript,
+        array(
+          'type' => 'inline',
+          'scope' => 'footer',
+          'every_page' => TRUE,
+        )
+      );
+    }
+
   }
 
   public function getAddThisAttributesMarkup($options) {
